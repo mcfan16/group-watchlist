@@ -1,4 +1,5 @@
 import "./globals.css";
+import IdentityGate from "@/components/IdentityGate";
 
 export const metadata = {
   title: "GroupWatchlist",
@@ -8,7 +9,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <IdentityGate>{children}</IdentityGate>
+      </body>
     </html>
   );
 }

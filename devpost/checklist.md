@@ -9,7 +9,7 @@ Build mode: learn
 
 ## Slices
 
-- [ ] **1. You can add a show manually and see it in a family queue**
+- [x] **1. You can add a show manually and see it in a family queue**
   Becomes usable: A live app connected to a real database — open it, add a show by typing its title (other fields optional), and see it appear in a list. An empty queue shows the welcome message instead of a blank screen.
   Why now: Every later slice depends on this pipeline (browser → app → database → back). This is where project bootstrapping belongs — getting real data flowing end to end first means every later slice has real ground to build on.
   PRD ref: `prd.md > The Core Journey` (steps 1-5), `prd.md > Adding a Show`, `prd.md > States and Boundaries` (empty state)
@@ -19,7 +19,7 @@ Build mode: learn
   Learner check: Open the app, add a show manually with just a title, and see it show up in the list.
   Commit: `Scaffold app, connect Supabase, add manual show entry and family list`
 
-- [ ] **2. Pick your name and rate a show**
+- [x] **2. Pick your name and rate a show**
   Becomes usable: Each person can pick their name once (remembered on their device) and give a 1-5 star rating to a show, saved for everyone to eventually see.
   Why now: This is the raw material of the unique kernel — individual, per-person ratings — and it needs to exist before either sorted view can mean anything.
   PRD ref: `prd.md > Identity`, `prd.md > Rating`, `prd.md > Main Row vs. Detail View`
@@ -81,7 +81,7 @@ Build mode: learn
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — after slice 1 (first working screen; a chance to confirm the warm/orange visual direction before more screens get built)
+- [x] Early usable behavior explored — after slice 1 (first working screen; a chance to confirm the warm/orange visual direction before more screens get built)
 - [ ] Final kick-the-tires exploration and feedback completed
 
 ## Final Review
