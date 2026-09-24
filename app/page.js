@@ -1,40 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 import { useIdentity } from "@/lib/identity";
+import { useShowsAndRatings } from "@/lib/useShowsAndRatings";
 import ShowRow from "@/components/ShowRow";
 import { sortFamilyView } from "@/lib/sorting";
 
-const POLL_INTERVAL_MS = 10000;
-
 export default function FamilyView() {
   const name = useIdentity();
-  const [shows, setShows] = useState([]);
-  const [ratings, setRatings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { shows, ratings, loading } = useShowsAndRatings();
   const [unratedOnly, setUnratedOnly] = useState(false);
-
-  const loadData = useCallback(async () => {
-    const [showsResult, ratingsResult] = await Promise.all([
-      supabase.from("shows").select("*").eq("status", "queued"),
-      supabase.from("ratings").select("*"),
-    ]);
-
-    if (showsResult.error) console.error("Failed to load shows:", showsResult.error);
-    if (ratingsResult.error) console.error("Failed to load ratings:", ratingsResult.error);
-
-    setShows(showsResult.data || []);
-    setRatings(ratingsResult.data || []);
-    setLoading(false);
-  }, []);
-
-  useEffect(() => {
-    loadData();
-    const interval = setInterval(loadData, POLL_INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, [loadData]);
 
   function ratingsForShow(showId) {
     return ratings.filter((r) => r.show_id === showId);
@@ -55,6 +31,12 @@ export default function FamilyView() {
           + Add new
         </Link>
       </div>
+
+      <p style={{ marginBottom: 16 }}>
+        <Link href="/personal" style={{ color: "var(--color-teal)", fontWeight: 600 }}>
+          Switch to my Personal view →
+        </Link>
+      </p>
 
       {!loading && shows.length > 0 && (
         <label

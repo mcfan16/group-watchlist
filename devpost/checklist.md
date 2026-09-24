@@ -39,7 +39,7 @@ Build mode: learn
   Learner check: Rate a couple of shows as if you were different people (switch the saved name between them) and watch the family list reorder to put the one you'd all enjoy at the top.
   Commit: `Sort family view by predicted agreement with live polling`
 
-- [ ] **4. Your personal view surfaces solo picks**
+- [x] **4. Your personal view surfaces solo picks**
   Becomes usable: Switching to the Personal view shows shows you'd enjoy that the rest of the family isn't into — a genuine solo pick, not just "everything I've rated."
   Why now: Completes the unique kernel — the whole reason for per-person ratings — while the sorting logic and data are still fresh from slice 3.
   PRD ref: `prd.md > Personal View`
@@ -101,3 +101,5 @@ Reflection: [offered/answered/declined/already covered — personal answer belon
 Activity mode: [live app and editor, explicit static fallback, focused alternative, prior practice, or recap]
 
 ## Revisions
+
+- Personal View sorting changed (`prd.md > Personal View`) — now requires the current person's own rating to be 4 or 5 (not just rated at all) to appear, and sorts by the average of everyone else's ratings ascending (not the lowest individual rating). Trying the built feature against real family data surfaced that "own rating first" put a show everyone already loves above a real solo pick nobody else wanted — the learner redefined the rule live during slice 4.
