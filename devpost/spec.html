@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GroupWatchlist — Spec</title>
+<style>
+  :root {
+    --bg: #fdf9f4; --surface: #ffffff; --border: #ecdfd0;
+    --ink: #2c2420; --ink-soft: #7a6d5f;
+    --accent: #d9711f; --accent-soft: #fbe6d3; --accent-deep: #b5560f;
+    --teal: #3d7a72; --teal-soft: #e1efec;
+    --rose: #b5495e; --rose-soft: #f5e1e5;
+    --shadow: 0 2px 12px rgba(90,60,30,0.07);
+    --code-bg: #f4ece0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #211b15; --surface: #2b241d; --border: #423628;
+      --ink: #f3e9dd; --ink-soft: #c2ab93;
+      --accent: #ec9a52; --accent-soft: #402a17; --accent-deep: #f5b579;
+      --teal: #7fc4b6; --teal-soft: #1e332e;
+      --rose: #e08a97; --rose-soft: #3a2429;
+      --shadow: 0 2px 16px rgba(0,0,0,0.4);
+      --code-bg: #33291c;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.55; padding: 0 20px 64px;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  header { padding: 44px 0 8px; text-align: center; }
+  .eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; color: var(--ink-soft); font-weight: 700; }
+  h1 { font-size: clamp(28px, 5vw, 40px); margin: 8px 0 6px; color: var(--accent-deep); }
+  .tagline { font-size: 16.5px; color: var(--ink-soft); max-width: 620px; margin: 0 auto; }
+  .status-pill {
+    display: inline-block; margin-top: 16px; padding: 5px 14px; border-radius: 999px;
+    background: var(--accent-soft); color: var(--accent-deep); font-size: 12.5px; font-weight: 700; letter-spacing: 0.03em;
+  }
+  section {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 26px 30px; margin-top: 22px; box-shadow: var(--shadow);
+  }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--ink-soft); margin: 0 0 16px; font-weight: 700; }
+  @media (max-width: 640px) { section { padding: 20px 18px; } }
+
+  .plain-lang p { font-size: 15.5px; margin: 0 0 12px; }
+  .plain-lang p:last-child { margin-bottom: 0; }
+
+  .diagram-wrap svg { width: 100%; height: auto; display: block; }
+  .diagram-caption { text-align: center; font-size: 13.5px; color: var(--ink-soft); margin-top: 10px; }
+
+  .stepper { display: flex; flex-direction: column; gap: 10px; }
+  .step { display: flex; gap: 14px; align-items: flex-start; border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; background: var(--bg); }
+  .step-num { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: white; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+  .step p { margin: 0; font-size: 14.5px; }
+  .step code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+
+  .stack-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 700px) { .stack-grid { grid-template-columns: 1fr; } }
+  .stack-card { border: 1px solid var(--border); border-radius: 12px; padding: 16px; background: var(--bg); text-align: center; }
+  .stack-card .role { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); font-weight: 700; }
+  .stack-card h3 { margin: 8px 0 6px; font-size: 17px; color: var(--accent-deep); }
+  .stack-card p { margin: 0; font-size: 13px; color: var(--ink-soft); }
+  .stack-card a { color: var(--teal); }
+
+  .reveal { border: 1px solid var(--border); border-radius: 12px; margin-top: 12px; overflow: hidden; background: var(--bg); }
+  .reveal summary { cursor: pointer; padding: 14px 18px; font-weight: 700; font-size: 15px; list-style: none; display: flex; align-items: center; justify-content: space-between; }
+  .reveal summary::-webkit-details-marker { display: none; }
+  .reveal summary::after { content: "+"; font-size: 18px; color: var(--ink-soft); font-weight: 400; }
+  .reveal[open] summary::after { content: "–"; }
+  .reveal .reveal-body { padding: 0 18px 18px; font-size: 14.5px; color: var(--ink); }
+  .reveal .reveal-body ul { margin: 8px 0; padding-left: 20px; }
+  .reveal .reveal-body li { margin-bottom: 6px; }
+  .reveal .prd-ref { display: inline-block; margin-top: 6px; font-size: 12.5px; color: var(--teal); background: var(--teal-soft); padding: 2px 8px; border-radius: 999px; }
+
+  .table-card { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--border); }
+  th { background: var(--accent-soft); color: var(--accent-deep); font-weight: 700; }
+  tr:last-child td { border-bottom: none; }
+  .table-title { font-weight: 700; padding: 10px 14px; background: var(--bg); font-size: 14px; }
+
+  pre.filetree {
+    background: var(--code-bg); border-radius: 12px; padding: 18px; overflow-x: auto;
+    font-size: 13px; line-height: 1.6; margin: 0;
+  }
+
+  .fail-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .fail-list li { padding: 12px 16px; border-radius: 10px; border: 1px solid var(--rose); background: var(--rose-soft); font-size: 14.5px; }
+  .fail-list strong { color: var(--rose); }
+
+  .simplify-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .simplify-list li { padding: 12px 16px; border-radius: 10px; border: 1px solid var(--teal); background: var(--teal-soft); font-size: 14.5px; }
+
+  .investigated-badge {
+    display: inline-flex; align-items: center; gap: 6px; background: var(--teal-soft); color: var(--teal);
+    padding: 4px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 700; margin-bottom: 10px;
+  }
+  .test-result { border: 1px solid var(--teal); background: var(--teal-soft); border-radius: 10px; padding: 12px 16px; font-size: 13.5px; margin-top: 8px; }
+
+  footer { text-align: center; margin-top: 40px; font-size: 13px; color: var(--ink-soft); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Devpost Learn · Build With AI: Basics</div>
+    <h1>GroupWatchlist — Technical Spec</h1>
+    <p class="tagline">The blueprint for how the product plan actually gets built: three pieces working together, tested against real data before writing a line of code.</p>
+    <div class="status-pill">SPEC · DRAFT — awaiting your review</div>
+  </header>
+
+  <section class="plain-lang">
+    <h2>How This Works, In Plain Language</h2>
+    <p><strong>The website</strong> is what you see and tap on your phone — the queue, star ratings, add-show screen.</p>
+    <p><strong>A small helper function</strong> runs behind the scenes only when needed — fetching a pasted Rotten Tomatoes page and reading its details, since a phone's browser can't safely reach another website directly.</p>
+    <p><strong>A shared database</strong> is a spreadsheet in the cloud that all three phones read from and write to, so everyone sees the same queue and each other's ratings.</p>
+  </section>
+
+  <section>
+    <h2>The Three Pieces</h2>
+    <div class="stack-grid">
+      <div class="stack-card">
+        <div class="role">The Website + Helper</div>
+        <h3>Next.js</h3>
+        <p>Pages you see, plus the link-parsing function, in one project.<br><a href="https://nextjs.org/docs" target="_blank" rel="noopener">nextjs.org/docs</a></p>
+      </div>
+      <div class="stack-card">
+        <div class="role">The Shared Spreadsheet</div>
+        <h3>Supabase</h3>
+        <p>Free hosted database all three phones read/write.<br><a href="https://supabase.com/docs" target="_blank" rel="noopener">supabase.com/docs</a></p>
+      </div>
+      <div class="stack-card">
+        <div class="role">On The Internet</div>
+        <h3>Vercel</h3>
+        <p>Connects to GitHub, auto-deploys, free tier.<br><a href="https://vercel.com/docs" target="_blank" rel="noopener">vercel.com/docs</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Architecture at a Glance</h2>
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 780 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three phones connect to a Next.js website. The website reads and writes a shared Supabase database, and its helper function fetches Rotten Tomatoes pages when a link is pasted.">
+        <defs>
+          <marker id="arrowS" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+          </marker>
+        </defs>
+        <style>
+          .sb { fill: var(--surface); stroke: var(--border); stroke-width: 1.5; }
+          .st { font: 700 13.5px -apple-system, sans-serif; fill: var(--ink); }
+          .ss { font: 400 11px -apple-system, sans-serif; fill: var(--ink-soft); }
+          .sl { stroke: var(--ink-soft); stroke-width: 1.8; fill: none; color: var(--ink-soft); marker-end: url(#arrowS); }
+          .accentbox { stroke: var(--accent); stroke-width: 2.5; }
+        </style>
+
+        <rect x="20" y="30" width="120" height="46" rx="10" class="sb"/>
+        <text x="80" y="58" text-anchor="middle" class="st">📱 Mom's phone</text>
+        <rect x="20" y="86" width="120" height="46" rx="10" class="sb"/>
+        <text x="80" y="114" text-anchor="middle" class="st">📱 Dad's phone</text>
+        <rect x="20" y="142" width="120" height="46" rx="10" class="sb"/>
+        <text x="80" y="170" text-anchor="middle" class="st">📱 Kid's phone</text>
+
+        <rect x="230" y="80" width="200" height="90" rx="14" class="sb accentbox"/>
+        <text x="330" y="106" text-anchor="middle" class="st">GroupWatchlist</text>
+        <text x="330" y="124" text-anchor="middle" class="ss">Next.js website</text>
+        <text x="330" y="140" text-anchor="middle" class="ss">+ link-parsing helper</text>
+        <text x="330" y="156" text-anchor="middle" class="ss">deployed on Vercel</text>
+
+        <rect x="530" y="30" width="220" height="70" rx="12" class="sb"/>
+        <text x="640" y="55" text-anchor="middle" class="st">Rotten Tomatoes</text>
+        <text x="640" y="72" text-anchor="middle" class="ss">(fetched only when a</text>
+        <text x="640" y="86" text-anchor="middle" class="ss">link is pasted)</text>
+
+        <rect x="530" y="160" width="220" height="70" rx="12" class="sb"/>
+        <text x="640" y="185" text-anchor="middle" class="st">Supabase</text>
+        <text x="640" y="202" text-anchor="middle" class="ss">shows + ratings tables</text>
+        <text x="640" y="216" text-anchor="middle" class="ss">(shared by all 3 phones)</text>
+
+        <path d="M140,53 C185,60 200,90 228,105" class="sl"/>
+        <path d="M140,109 L228,120" class="sl"/>
+        <path d="M140,165 C185,155 200,140 228,132" class="sl"/>
+
+        <path d="M430,110 C480,90 490,80 528,68" class="sl"/>
+        <path d="M430,145 C480,175 490,185 528,195" class="sl"/>
+      </svg>
+    </div>
+    <p class="diagram-caption">Each phone talks only to the GroupWatchlist site — it's the one place that reaches out to Supabase and Rotten Tomatoes on your behalf.</p>
+  </section>
+
+  <section>
+    <h2>Where It Runs &amp; How to Try It</h2>
+    <div class="stepper">
+      <div class="step"><div class="step-num">💻</div><p><strong>Local development:</strong> <code>npm run dev</code>, then open <code>http://localhost:3000</code> — this is what to record if the deployed version isn't ready.</p></div>
+      <div class="step"><div class="step-num">🌐</div><p><strong>Real family use:</strong> deployed on Vercel, connected to GitHub — each person opens the same URL from their own phone (optionally "Add to Home Screen" for an app-like icon).</p></div>
+      <div class="step"><div class="step-num">🎬</div><p><strong>Recommended demo:</strong> record the deployed version, ideally on multiple real phones — shows the actual kernel (separate people, separate devices, agreement forming live) far more convincingly than one browser tab. Test it thoroughly a day or two ahead; keep localhost as a fallback.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The Core Journey Through the System</h2>
+    <div class="stepper">
+      <div class="step"><div class="step-num">1</div><p>Open on your phone → checks <code>localStorage</code> for a saved name → picks name once if none saved.</p></div>
+      <div class="step"><div class="step-num">2</div><p>Fetches shows + ratings from Supabase → shows the Family view, sorted.</p></div>
+      <div class="step"><div class="step-num">3</div><p>Empty queue → welcome message + "add your first show" prompt.</p></div>
+      <div class="step"><div class="step-num">4</div><p>Tap "add new" → paste RT link → sent to <code>app/api/parse-link</code> → fetches & reads the page → editable preview → save → new row in <code>shows</code>.</p></div>
+      <div class="step"><div class="step-num">5</div><p>New show appears at the bottom, unrated.</p></div>
+      <div class="step"><div class="step-num">6</div><p>Anyone taps in, adds 1–5 stars → row written to <code>ratings</code>.</p></div>
+      <div class="step"><div class="step-num">7</div><p>Views quietly re-check Supabase every 10 seconds (polling) and re-sort if anything changed — no manual refresh needed.</p></div>
+      <div class="step"><div class="step-num">8</div><p>Swipe → Delete (row removed) or Mark Watched (status flips, moves to archive).</p></div>
+      <div class="step"><div class="step-num">9</div><p>Switch to Personal view — same data, filtered/sorted for solo picks.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Look and Feel</h2>
+    <p>Warm and clean/minimalist. A warm terracotta orange as the primary accent, paired with a soft teal and a muted rose as complements. System font stack — no custom web font to load. Generous white space, rounded cards, calm rather than busy. Plain CSS expresses this fully.</p>
+    <div class="stack-grid" style="grid-template-columns: repeat(5, 1fr); gap: 8px;">
+      <div style="height:44px; border-radius:10px; background:#d9711f;" title="Primary accent"></div>
+      <div style="height:44px; border-radius:10px; background:#3d7a72;" title="Complementary teal"></div>
+      <div style="height:44px; border-radius:10px; background:#b5495e;" title="Complementary rose"></div>
+      <div style="height:44px; border-radius:10px; background:#fdf9f4; border:1px solid #ecdfd0;" title="Warm background"></div>
+      <div style="height:44px; border-radius:10px; background:#2c2420;" title="Ink"></div>
+    </div>
+    <div class="test-result" style="margin-top:16px;">
+      <strong>Interface copy catch:</strong> the star control isn't a post-watch "rating" — it's a pre-watch gauge of interest. Label it that way: <em>"How interested are you in watching this?"</em> rather than "Rate this show." The rest of the interface text should follow that same warm, casual, family-note voice — not generic form labels — written consistently as each screen gets built.
+    </div>
+  </section>
+
+  <section>
+    <h2>Components</h2>
+
+    <details class="reveal" open>
+      <summary>Name Picker</summary>
+      <div class="reveal-body">One-time screen when no name is saved on this device; saves to <code>localStorage</code> via <code>lib/identity.js</code>.<br><span class="prd-ref">prd.md → Identity</span></div>
+    </details>
+
+    <details class="reveal">
+      <summary>Family View — app/page.js</summary>
+      <div class="reveal-body">Fetches from Supabase, sorts via <code>lib/sorting.js</code>, renders <code>ShowRow</code>s. Includes tab, add button, unrated-toggle, Watched link. Polls every 10 seconds and re-sorts if anything changed.<br><span class="prd-ref">prd.md → Family View Sorting</span> <span class="prd-ref">prd.md → Finding What You Haven't Rated</span></div>
+    </details>
+
+    <details class="reveal">
+      <summary>Personal View — app/personal/page.js</summary>
+      <div class="reveal-body">Same data + component, filtered/sorted per the personal rules. Also polls every 10 seconds.<br><span class="prd-ref">prd.md → Personal View</span></div>
+    </details>
+
+    <details class="reveal">
+      <summary>Add Show — app/add/page.js</summary>
+      <div class="reveal-body">Two entry paths, one editable preview before saving to <code>shows</code>.<br><span class="prd-ref">prd.md → Adding a Show</span></div>
+    </details>
+
+    <details class="reveal" open>
+      <summary>Link Parser — app/api/parse-link <span class="investigated-badge">✓ tested against real pages</span></summary>
+      <div class="reveal-body">
+        Server-side function: fetches the pasted URL, extracts title, cover image, genre, synopsis, Tomatometer, Popcornmeter, platform(s). Returns whatever it finds — partial results are expected and fine. Clear error if the page can't be fetched/parsed at all.
+        <div class="test-result">Tested live against <code>rottentomatoes.com/m/monsters_inc</code> and <code>rottentomatoes.com/tv/friends</code>: title, synopsis, genre, both scores, streaming platforms, and the poster image URL were all present in the fetched page content — not hidden behind client-side rendering.</div>
+        <span class="prd-ref">prd.md → Adding a Show</span>
+      </div>
+    </details>
+
+    <details class="reveal">
+      <summary>Show Detail — app/show/[id]/page.js</summary>
+      <div class="reveal-body">Platform(s), genre, synopsis, both scores, link, rating control.<br><span class="prd-ref">prd.md → Main Row vs. Detail View</span></div>
+    </details>
+
+    <details class="reveal">
+      <summary>Star Rating Control</summary>
+      <div class="reveal-body">Tap-to-set 1–5 stars, writes/updates that person's row in <code>ratings</code>. Framed as interest, not review: <em>"How interested are you in watching this?"</em><br><span class="prd-ref">prd.md → Rating</span></div>
+    </details>
+
+    <details class="reveal">
+      <summary>Swipe Actions</summary>
+      <div class="reveal-body">Swipe on a row reveals Delete and Mark Watched.<br><span class="prd-ref">prd.md → Marking Watched / Deleting</span></div>
+    </details>
+
+    <details class="reveal">
+      <summary>Watched Archive — app/watched/page.js</summary>
+      <div class="reveal-body">Read-only list, status = "watched," no swipe actions.<br><span class="prd-ref">prd.md → Watched Archive</span></div>
+    </details>
+  </section>
+
+  <section>
+    <h2>Data Model</h2>
+    <div class="table-card">
+      <div class="table-title">shows</div>
+      <table>
+        <tr><th>field</th><th>meaning</th></tr>
+        <tr><td>id</td><td>unique id</td></tr>
+        <tr><td>title</td><td>show/movie name</td></tr>
+        <tr><td>cover_image_url</td><td>poster image</td></tr>
+        <tr><td>platforms</td><td>list — a show can be on more than one</td></tr>
+        <tr><td>genre, synopsis</td><td>from RT or manual entry</td></tr>
+        <tr><td>tomatometer, popcornmeter</td><td>the two RT scores</td></tr>
+        <tr><td>link_url</td><td>RT link or a manual link (e.g. YouTube)</td></tr>
+        <tr><td>status</td><td><code>queued</code> or <code>watched</code></td></tr>
+      </table>
+    </div>
+    <div class="table-card" style="margin-top:14px;">
+      <div class="table-title">ratings</div>
+      <table>
+        <tr><th>field</th><th>meaning</th></tr>
+        <tr><td>id</td><td>unique id</td></tr>
+        <tr><td>show_id</td><td>links to a show</td></tr>
+        <tr><td>person</td><td>mom / dad / kid</td></tr>
+        <tr><td>stars</td><td>1–5</td></tr>
+      </table>
+    </div>
+    <p style="font-size:13.5px; color:var(--ink-soft); margin-top:14px;">Both tables live in Supabase, shared by all three phones. Only your chosen <em>name</em> stays local to your own device (<code>localStorage</code>) — everything else persists centrally between sessions, for everyone.</p>
+  </section>
+
+  <section>
+    <h2>File Structure</h2>
+    <pre class="filetree">groupwatchlist/
+├── app/
+│   ├── page.js              # Family view (landing page)
+│   ├── personal/page.js     # Personal view
+│   ├── add/page.js          # Add Show — RT link or manual, editable preview
+│   ├── show/[id]/page.js    # Show Detail view
+│   ├── watched/page.js      # Watched Archive (read-only)
+│   ├── api/parse-link/route.js  # Fetches & reads a pasted RT page
+│   ├── layout.js            # Shared page frame; checks for a saved name
+│   └── globals.css          # Warm/orange styling
+├── components/
+│   ├── ShowRow.js           # Row: cover image, title, everyone's stars
+│   ├── NamePicker.js        # One-time name picker (saves to localStorage)
+│   ├── StarRating.js        # Tap-to-rate control
+│   └── SwipeActions.js      # Swipe-to-reveal Delete / Mark Watched
+├── lib/
+│   ├── supabase.js          # Connects to the shared database
+│   ├── sorting.js           # Family & personal sort rules
+│   └── identity.js          # Reads/writes the saved name (localStorage)
+├── devpost/                 # Planning docs (scope, PRD, this spec)
+├── .env.local               # Supabase URL/key — gitignored, never committed
+└── package.json</pre>
+  </section>
+
+  <section>
+    <h2>Important Failure Modes</h2>
+    <ul class="fail-list">
+      <li><strong>RT link can't be fetched/parsed</strong> → error message, retry the link, or jump to manual entry.</li>
+      <li><strong>RT link parses only partially</strong> → editable preview leaves that field blank; saving isn't blocked.</li>
+      <li><strong>Empty queue</strong> → welcome message + add-first-show prompt, never a blank/broken screen.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>What Was Simplified and Why</h2>
+    <ul class="simplify-list">
+      <li><strong>10-second polling, not true real-time sync</strong> — quietly re-checks Supabase every 10 seconds rather than an instant push connection. Nearly the same felt experience, without websockets or Supabase's realtime feature, which are harder to build and debug.</li>
+      <li><strong>Status flag, not a separate archive table</strong> — "watched" just flips a field. Same result, simpler to build.</li>
+      <li><strong>No accounts</strong> — a one-time per-device name pick covers identity for 3 known people.</li>
+      <li><strong>Plain CSS, no UI framework</strong> — one fewer thing to learn; the warm/minimal look doesn't need a design system.</li>
+      <li><strong>No app-store distribution</strong> — "Add to Home Screen" gives an app-like icon without a paid developer account or review process.</li>
+    </ul>
+  </section>
+
+  <details class="reveal" open>
+    <summary>Decisions &amp; Open Issues</summary>
+    <div class="reveal-body">
+      <ul>
+        <li><strong>Deployed on Vercel, not local-only</strong> — the family wants to actually use this on their own phones after the hackathon, not just demo it once.</li>
+        <li><strong>Family score computed live from the ratings table</strong> — always current, never a stale precomputed value.</li>
+        <li><strong>Investigated uncertainty:</strong> whether Rotten Tomatoes exposes enough data to a plain fetch (no official API exists). Tested against two real pages — all target fields were present in the fetched content. Strong signal the plan works; the parsing code itself still needs writing and testing against more pages early in the build.</li>
+        <li><strong>Carried from the PRD's open question:</strong> the exact field list may need small adjustments once tested more broadly (many-season shows, older or sparse titles) — expected to affect which fields auto-fill vs. need manual entry, not the architecture itself.</li>
+      </ul>
+    </div>
+  </details>
+
+  <footer>
+    GroupWatchlist · Spec Draft · Markdown version is canonical: <code>devpost/spec.md</code>
+  </footer>
+
+</div>
+</body>
+</html>

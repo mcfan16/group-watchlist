@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Family Watch Queue — Scope</title>
+<style>
+  :root {
+    --bg: #faf8f5;
+    --surface: #ffffff;
+    --border: #e6e0d6;
+    --ink: #2a2520;
+    --ink-soft: #6b6258;
+    --accent: #d1495b;
+    --accent-soft: #f6dde1;
+    --accent2: #3a7d63;
+    --accent2-soft: #dcece3;
+    --gold: #c9922a;
+    --gold-soft: #f5e7cc;
+    --now: #3a7d63;
+    --now-bg: #eaf4ee;
+    --later: #c9922a;
+    --later-bg: #fbf1de;
+    --cut: #9a5a5a;
+    --cut-bg: #f6e9e9;
+    --shadow: 0 2px 10px rgba(40,30,20,0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1a17;
+      --surface: #262320;
+      --border: #3a352f;
+      --ink: #f0ece5;
+      --ink-soft: #b3aa9e;
+      --accent: #e8778a;
+      --accent-soft: #3c2529;
+      --accent2: #6fbf9a;
+      --accent2-soft: #223b30;
+      --gold: #e0ab52;
+      --gold-soft: #3d3220;
+      --now: #6fbf9a;
+      --now-bg: #1e2f27;
+      --later: #e0ab52;
+      --later-bg: #362c1a;
+      --cut: #d38a8a;
+      --cut-bg: #332323;
+      --shadow: 0 2px 14px rgba(0,0,0,0.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+    padding: 0 20px 64px;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  header {
+    padding: 48px 0 8px;
+    text-align: center;
+  }
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  h1 {
+    font-size: clamp(28px, 5vw, 42px);
+    margin: 8px 0 6px;
+    letter-spacing: -0.01em;
+  }
+  .tagline {
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 560px;
+    margin: 0 auto;
+  }
+  .status-pill {
+    display: inline-block;
+    margin-top: 18px;
+    padding: 5px 14px;
+    border-radius: 999px;
+    background: var(--gold-soft);
+    color: var(--gold);
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+  section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 30px;
+    margin-top: 24px;
+    box-shadow: var(--shadow);
+  }
+  h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--ink-soft);
+    margin: 0 0 14px;
+    font-weight: 700;
+  }
+  .kernel-card {
+    border-color: var(--accent);
+    background: linear-gradient(180deg, var(--accent-soft), var(--surface) 70%);
+  }
+  .kernel-card p { font-size: 18px; margin: 0; }
+  .kernel-card .h2-kernel {
+    color: var(--accent);
+  }
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 640px) {
+    .grid2 { grid-template-columns: 1fr; }
+    section { padding: 22px 20px; }
+  }
+  .diagram-wrap svg { width: 100%; height: auto; display: block; }
+  .diagram-caption {
+    text-align: center;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin-top: 10px;
+  }
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--ink-soft);
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .tab-btn[data-key="now"].active { background: var(--now-bg); color: var(--now); border-color: var(--now); }
+  .tab-btn[data-key="later"].active { background: var(--later-bg); color: var(--later); border-color: var(--later); }
+  .tab-btn[data-key="cut"].active { background: var(--cut-bg); color: var(--cut); border-color: var(--cut); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .boundary-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .boundary-list li {
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 15px;
+    border: 1px solid var(--border);
+  }
+  .tab-panel[data-key="now"] li { background: var(--now-bg); border-color: var(--now); }
+  .tab-panel[data-key="later"] li { background: var(--later-bg); border-color: var(--later); }
+  .tab-panel[data-key="cut"] li { background: var(--cut-bg); border-color: var(--cut); }
+  .tab-panel[data-key="cut"] li .reason {
+    display: block;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+    font-weight: 400;
+  }
+  .reveal {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0;
+    margin-top: 12px;
+    overflow: hidden;
+    background: var(--bg);
+  }
+  .reveal summary {
+    cursor: pointer;
+    padding: 14px 18px;
+    font-weight: 700;
+    font-size: 15px;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .reveal summary::-webkit-details-marker { display: none; }
+  .reveal summary::after {
+    content: "+";
+    font-size: 18px;
+    color: var(--ink-soft);
+    font-weight: 400;
+  }
+  .reveal[open] summary::after { content: "–"; }
+  .reveal .reveal-body { padding: 0 18px 18px; font-size: 15px; color: var(--ink-soft); }
+  .who-card { display: flex; gap: 14px; align-items: flex-start; }
+  .avatar-row { display: flex; gap: -8px; }
+  .avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px; color: white;
+    border: 2px solid var(--surface);
+    margin-left: -10px;
+  }
+  .avatar:first-child { margin-left: 0; }
+  footer {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Devpost Learn · Build With AI: Basics</div>
+    <h1>Family Watch Queue</h1>
+    <p class="tagline">A shared queue where everyone rates a show themselves, so the list surfaces what the whole family will actually agree on tonight.</p>
+    <div class="status-pill">SCOPE · DRAFT — awaiting your review</div>
+  </header>
+
+  <section class="kernel-card">
+    <h2 class="h2-kernel">The Unique Kernel</h2>
+    <p>Not one shared "we like this" score — <strong>your</strong> rating, <strong>his</strong> rating, <strong>theirs</strong>. Because ratings are per-person, the same data powers two views: a <strong>family view</strong> sorted by predicted agreement (tonight's safest bet), and a <strong>personal view</strong> for watching solo — shows you'd love that nobody else wants.</p>
+  </section>
+
+  <section>
+    <h2>The Core Loop</h2>
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Loop diagram: add a show during the day, each family member rates it, the queue sorts by predicted agreement, then mark watched or delete, repeating.">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+          </marker>
+        </defs>
+        <style>
+          .node-box { fill: var(--surface); stroke: var(--border); stroke-width: 1.5; }
+          .node-title { font: 700 14px -apple-system, sans-serif; fill: var(--ink); }
+          .node-sub { font: 400 11.5px -apple-system, sans-serif; fill: var(--ink-soft); }
+          .flow-line { stroke: var(--ink-soft); stroke-width: 1.8; fill: none; color: var(--ink-soft); marker-end: url(#arrow); }
+          .kernel-node { stroke: var(--accent); stroke-width: 2.5; }
+          .kernel-label { font: 700 11px -apple-system, sans-serif; fill: var(--accent); }
+        </style>
+
+        <!-- Node 1: Add show -->
+        <rect x="20" y="40" width="150" height="70" rx="12" class="node-box"/>
+        <text x="95" y="68" text-anchor="middle" class="node-title">Add a show</text>
+        <text x="95" y="86" text-anchor="middle" class="node-sub">RT link auto-fills details,</text>
+        <text x="95" y="100" text-anchor="middle" class="node-sub">or enter manually</text>
+
+        <!-- Node 2: Individual ratings (kernel) -->
+        <rect x="230" y="40" width="170" height="70" rx="12" class="node-box kernel-node"/>
+        <text x="315" y="60" text-anchor="middle" class="kernel-label">★ KERNEL</text>
+        <text x="315" y="78" text-anchor="middle" class="node-title">Each person rates it</text>
+        <text x="315" y="96" text-anchor="middle" class="node-sub">mom · dad · kid — separately</text>
+
+        <!-- Node 3: Sorted queue -->
+        <rect x="460" y="40" width="170" height="70" rx="12" class="node-box"/>
+        <text x="545" y="62" text-anchor="middle" class="node-title">Two views</text>
+        <text x="545" y="80" text-anchor="middle" class="node-sub">family: most agreed-on</text>
+        <text x="545" y="94" text-anchor="middle" class="node-sub">personal: just for you</text>
+
+        <!-- Node 4: Watch tonight -->
+        <rect x="620" y="180" width="120" height="70" rx="12" class="node-box"/>
+        <text x="680" y="208" text-anchor="middle" class="node-title">Watch it</text>
+        <text x="680" y="226" text-anchor="middle" class="node-sub">together, that</text>
+        <text x="680" y="240" text-anchor="middle" class="node-sub">evening</text>
+
+        <!-- Node 5: mark watched / delete -->
+        <rect x="380" y="180" width="170" height="70" rx="12" class="node-box"/>
+        <text x="465" y="208" text-anchor="middle" class="node-title">Mark watched</text>
+        <text x="465" y="226" text-anchor="middle" class="node-sub">or delete if nobody's</text>
+        <text x="465" y="240" text-anchor="middle" class="node-sub">actually interested</text>
+
+        <!-- Node 6 back to queue -->
+        <rect x="120" y="180" width="180" height="70" rx="12" class="node-box"/>
+        <text x="210" y="208" text-anchor="middle" class="node-title">Next evening...</text>
+        <text x="210" y="226" text-anchor="middle" class="node-sub">new ideas from news,</text>
+        <text x="210" y="240" text-anchor="middle" class="node-sub">friends get added</text>
+
+        <!-- arrows -->
+        <path d="M170,75 L228,75" class="flow-line"/>
+        <path d="M400,75 L458,75" class="flow-line"/>
+        <path d="M580,110 C620,140 660,150 680,178" class="flow-line"/>
+        <path d="M620,215 L552,215" class="flow-line"/>
+        <path d="M380,215 L302,215" class="flow-line"/>
+        <path d="M150,180 C120,150 100,110 90,112" class="flow-line"/>
+      </svg>
+    </div>
+    <p class="diagram-caption">The loop repeats every time the family needs an answer to "what should we watch?"</p>
+  </section>
+
+  <div class="grid2">
+    <section>
+      <h2>Who It's For</h2>
+      <div class="who-card">
+        <div class="avatar-row">
+          <div class="avatar" style="background:#d1495b;">M</div>
+          <div class="avatar" style="background:#3a7d63;">D</div>
+          <div class="avatar" style="background:#c9922a;">K</div>
+        </div>
+      </div>
+      <p style="margin-top:14px;">One specific family of three — mom, dad, kid — who watch TV together most evenings across Netflix, YouTube, Hulu, and Amazon Prime. Today: ideas land in the phone's Notes app, a plain list with no ratings, no platform info, no way to see who'd actually enjoy it.</p>
+    </section>
+    <section>
+      <h2>Why This Matters</h2>
+      <p>A cell biologist and longtime social entrepreneur (co-founder of Addgene, 22 years as CEO/CSO) who recently stepped back into an advisory role to make room for learning something new. This is a low-stakes way to learn AI-agent collaboration — while fixing a real evening friction point, turning "what do we watch" into genuine family time.</p>
+    </section>
+  </div>
+
+  <section>
+    <h2>What "Working" Looks Like — the one-minute demo</h2>
+    <ol style="padding-left:20px; margin:0;">
+      <li style="margin-bottom:10px;"><strong>Add a show</strong> by pasting a Rotten Tomatoes link — genre/synopsis/rating/platform(s) auto-populate — then add a second show manually to show that path too.</li>
+      <li style="margin-bottom:10px;"><strong>Each family member</strong> picks their name, sees which shows they haven't rated yet, and adds their own star/rank rating.</li>
+      <li style="margin-bottom:10px;">The <strong>family view</strong> shows the list sorted with the most-agreed-upon show at the top — switch to the <strong>personal view</strong> and see a show she'd love that nobody else wants, perfect for solo exercise-watching.</li>
+      <li><strong>Mark watched</strong> or <strong>delete</strong> — both visible and working.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>The Proof-of-Concept Boundary</h2>
+    <div class="tabs">
+      <button class="tab-btn active" data-key="now" onclick="showTab('now')">Now (this PoC)</button>
+      <button class="tab-btn" data-key="later" onclick="showTab('later')">Later</button>
+      <button class="tab-btn" data-key="cut" onclick="showTab('cut')">Explicitly Cut</button>
+    </div>
+
+    <div class="tab-panel active" data-key="now">
+      <ul class="boundary-list">
+        <li>Add a show: paste a Rotten Tomatoes link to auto-populate genre, synopsis, rating, and platform(s) when available — or enter everything manually, including platform, for anything not on Rotten Tomatoes or when RT doesn't list where to watch it</li>
+        <li>A show can have more than one platform (Netflix/YouTube/Hulu/Amazon Prime), since titles are often available in multiple places</li>
+        <li>Each of the three family members selects their name (no accounts/login) and gives their own star/rank rating</li>
+        <li>A way to see or filter which shows you personally haven't rated yet</li>
+        <li>Family queue view sorted by predicted agreement across everyone's ratings</li>
+        <li>Personal queue view for solo watching — surfaces shows rated highly by you but low by everyone else</li>
+        <li>Mark a show watched</li>
+        <li>Delete a show</li>
+        <li>Queue data stays private — kept out of the public code repo via <code>.gitignore</code>, same as API keys</li>
+      </ul>
+    </div>
+
+    <div class="tab-panel" data-key="later">
+      <ul class="boundary-list">
+        <li>Sharing the app with friends or other families beyond this household</li>
+      </ul>
+    </div>
+
+    <div class="tab-panel" data-key="cut">
+      <ul class="boundary-list">
+        <li>Real user accounts / authentication
+          <span class="reason">Reason: unnecessary complexity for a closed group of three known people — a simple name picker covers it.</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <details class="reveal">
+    <summary>Inspiration &amp; Identity</summary>
+    <div class="reveal-body">
+      Directly inspired by Netflix's "My List" queue — but platform-agnostic, since this family watches across four different services. No specific visual reference yet; keep it simple and functional for now. Look and feel gets a proper pass in the PRD.
+    </div>
+  </details>
+
+  <footer>
+    Family Watch Queue · Scope Draft · Markdown version is canonical: <code>devpost/scope.md</code>
+  </footer>
+
+</div>
+
+<script>
+  function showTab(key) {
+    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+      btn.classList.toggle('active', btn.dataset.key === key);
+    });
+    document.querySelectorAll('.tab-panel').forEach(function(panel) {
+      panel.classList.toggle('active', panel.dataset.key === key);
+    });
+  }
+</script>
+
+</body>
+</html>

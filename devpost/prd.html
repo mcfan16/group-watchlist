@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GroupWatchlist — PRD</title>
+<style>
+  :root {
+    --bg: #fdf9f4;
+    --surface: #ffffff;
+    --border: #ecdfd0;
+    --ink: #2c2420;
+    --ink-soft: #7a6d5f;
+    --accent: #d9711f;
+    --accent-soft: #fbe6d3;
+    --accent-deep: #b5560f;
+    --teal: #3d7a72;
+    --teal-soft: #e1efec;
+    --rose: #b5495e;
+    --rose-soft: #f5e1e5;
+    --now: #3d7a72;
+    --now-bg: #e6f1ee;
+    --later: #d9711f;
+    --later-bg: #fbe9d8;
+    --cut: #b5495e;
+    --cut-bg: #f7e6e9;
+    --shadow: 0 2px 12px rgba(90,60,30,0.07);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #211b15;
+      --surface: #2b241d;
+      --border: #423628;
+      --ink: #f3e9dd;
+      --ink-soft: #c2ab93;
+      --accent: #ec9a52;
+      --accent-soft: #402a17;
+      --accent-deep: #f5b579;
+      --teal: #7fc4b6;
+      --teal-soft: #1e332e;
+      --rose: #e08a97;
+      --rose-soft: #3a2429;
+      --now: #7fc4b6;
+      --now-bg: #1e332e;
+      --later: #ec9a52;
+      --later-bg: #402c17;
+      --cut: #e08a97;
+      --cut-bg: #3a2429;
+      --shadow: 0 2px 16px rgba(0,0,0,0.4);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+    padding: 0 20px 64px;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  header { padding: 44px 0 8px; text-align: center; }
+  .eyebrow {
+    text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px;
+    color: var(--ink-soft); font-weight: 700;
+  }
+  h1 { font-size: clamp(28px, 5vw, 40px); margin: 8px 0 6px; letter-spacing: -0.01em; color: var(--accent-deep); }
+  .tagline { font-size: 16.5px; color: var(--ink-soft); max-width: 600px; margin: 0 auto; }
+  .status-pill {
+    display: inline-block; margin-top: 16px; padding: 5px 14px; border-radius: 999px;
+    background: var(--accent-soft); color: var(--accent-deep); font-size: 12.5px; font-weight: 700; letter-spacing: 0.03em;
+  }
+  section {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 26px 30px; margin-top: 22px; box-shadow: var(--shadow);
+  }
+  h2 {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.09em;
+    color: var(--ink-soft); margin: 0 0 16px; font-weight: 700;
+  }
+  @media (max-width: 640px) { section { padding: 20px 18px; } }
+
+  .journey-wrap svg { width: 100%; height: auto; display: block; }
+  .journey-caption { text-align: center; font-size: 13.5px; color: var(--ink-soft); margin-top: 10px; }
+
+  .stepper { display: flex; flex-direction: column; gap: 10px; }
+  .step {
+    display: flex; gap: 14px; align-items: flex-start;
+    border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; background: var(--bg);
+  }
+  .step-num {
+    flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--accent); color: white; font-weight: 700; font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step p { margin: 0; font-size: 14.5px; }
+
+  .screen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .screen-grid { grid-template-columns: 1fr; } }
+  .screen-card {
+    border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; background: var(--bg);
+  }
+  .screen-card h3 { margin: 0 0 6px; font-size: 15px; color: var(--accent-deep); }
+  .screen-card p { margin: 0; font-size: 14px; color: var(--ink-soft); }
+
+  .palette-row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  .swatch { width: 44px; height: 44px; border-radius: 10px; border: 1px solid var(--border); }
+
+  .reveal {
+    border: 1px solid var(--border); border-radius: 12px; margin-top: 12px; overflow: hidden; background: var(--bg);
+  }
+  .reveal summary {
+    cursor: pointer; padding: 14px 18px; font-weight: 700; font-size: 15px;
+    list-style: none; display: flex; align-items: center; justify-content: space-between;
+  }
+  .reveal summary::-webkit-details-marker { display: none; }
+  .reveal summary::after { content: "+"; font-size: 18px; color: var(--ink-soft); font-weight: 400; }
+  .reveal[open] summary::after { content: "–"; }
+  .reveal .reveal-body { padding: 0 18px 18px; font-size: 14.5px; color: var(--ink); }
+  .reveal .reveal-body ul { margin: 8px 0; padding-left: 20px; }
+  .reveal .reveal-body li { margin-bottom: 6px; }
+
+  .sort-example {
+    display: flex; flex-direction: column; gap: 6px; margin-top: 10px;
+    font-size: 13.5px; font-family: ui-monospace, "SF Mono", monospace;
+  }
+  .sort-row {
+    display: flex; justify-content: space-between; padding: 8px 12px;
+    border-radius: 8px; background: var(--surface); border: 1px solid var(--border);
+  }
+  .sort-row .score { color: var(--accent-deep); font-weight: 700; }
+
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab-btn {
+    border: 1px solid var(--border); background: var(--surface); color: var(--ink-soft);
+    padding: 8px 16px; border-radius: 999px; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .tab-btn[data-key="now"].active { background: var(--now-bg); color: var(--now); border-color: var(--now); }
+  .tab-btn[data-key="later"].active { background: var(--later-bg); color: var(--later); border-color: var(--later); }
+  .tab-btn[data-key="cut"].active { background: var(--cut-bg); color: var(--cut); border-color: var(--cut); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .boundary-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .boundary-list li { padding: 12px 16px; border-radius: 10px; font-size: 14.5px; border: 1px solid var(--border); }
+  .tab-panel[data-key="now"] li { background: var(--now-bg); border-color: var(--now); }
+  .tab-panel[data-key="later"] li { background: var(--later-bg); border-color: var(--later); }
+  .tab-panel[data-key="cut"] li { background: var(--cut-bg); border-color: var(--cut); }
+  .boundary-list .reason { display: block; font-size: 12.5px; color: var(--ink-soft); margin-top: 4px; font-weight: 400; }
+
+  .states-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .states-list li {
+    padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); font-size: 14.5px;
+  }
+  .states-list strong { color: var(--accent-deep); }
+
+  footer { text-align: center; margin-top: 40px; font-size: 13px; color: var(--ink-soft); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Devpost Learn · Build With AI: Basics</div>
+    <h1>GroupWatchlist</h1>
+    <p class="tagline">Everyone rates a show individually — the app surfaces what the family will agree on tonight, or what you'd enjoy watching alone.</p>
+    <div class="status-pill">PRD · DRAFT — awaiting your review</div>
+  </header>
+
+  <section>
+    <h2>The Core Journey</h2>
+    <div class="stepper">
+      <div class="step"><div class="step-num">1</div><p>Open the app on your own phone — it already knows who you are, no re-entering your name.</p></div>
+      <div class="step"><div class="step-num">2</div><p>Land on the <strong>Family view</strong>: the queue sorted by predicted agreement, with a tab to your Personal view and an "add new" button.</p></div>
+      <div class="step"><div class="step-num">3</div><p>Empty queue? See a welcome message and a prompt to add the first show.</p></div>
+      <div class="step"><div class="step-num">4</div><p>Tap "add new" — paste a Rotten Tomatoes link (auto-fills details) or go straight to manual entry. Either way, preview and edit before saving.</p></div>
+      <div class="step"><div class="step-num">5</div><p>The new show appears at the bottom of the Family view — unrated, waiting for ratings.</p></div>
+      <div class="step"><div class="step-num">6</div><p>Anyone taps in and adds their own 1–5 star rating.</p></div>
+      <div class="step"><div class="step-num">7</div><p>The Family view re-sorts live: shows everyone's on board with rise to the top.</p></div>
+      <div class="step"><div class="step-num">8</div><p>Watched it? Swipe → Mark Watched (moves to the archive). Nobody's into it? Swipe → Delete.</p></div>
+      <div class="step"><div class="step-num">9</div><p>Watching solo (e.g. during exercise)? Switch to Personal view for a pick you'd love that the family isn't into.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The Kernel, Made Concrete</h2>
+    <div class="journey-wrap">
+      <svg viewBox="0 0 760 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram showing individual star ratings feeding two separate sorted views: family view sorted by minimum rating, and personal view sorted by the viewer's own high rating combined with low ratings from others.">
+        <defs>
+          <marker id="arrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+          </marker>
+        </defs>
+        <style>
+          .n-box { fill: var(--surface); stroke: var(--border); stroke-width: 1.5; }
+          .n-title { font: 700 14px -apple-system, sans-serif; fill: var(--ink); }
+          .n-sub { font: 400 11.5px -apple-system, sans-serif; fill: var(--ink-soft); }
+          .f-line { stroke: var(--ink-soft); stroke-width: 1.8; fill: none; color: var(--ink-soft); marker-end: url(#arrow2); }
+          .k-node { stroke: var(--accent); stroke-width: 2.5; }
+          .k-label { font: 700 11px -apple-system, sans-serif; fill: var(--accent-deep); }
+        </style>
+
+        <rect x="290" y="15" width="180" height="60" rx="12" class="n-box k-node"/>
+        <text x="380" y="38" text-anchor="middle" class="k-label">★ Individual ratings</text>
+        <text x="380" y="56" text-anchor="middle" class="n-sub">mom · dad · kid, each separate</text>
+
+        <rect x="60" y="150" width="230" height="80" rx="12" class="n-box"/>
+        <text x="175" y="174" text-anchor="middle" class="n-title">Family View</text>
+        <text x="175" y="192" text-anchor="middle" class="n-sub">score = MIN of ratings so far</text>
+        <text x="175" y="207" text-anchor="middle" class="n-sub">tie → highest average wins</text>
+        <text x="175" y="222" text-anchor="middle" class="n-sub">unrated shows sink to bottom</text>
+
+        <rect x="470" y="150" width="230" height="80" rx="12" class="n-box"/>
+        <text x="585" y="174" text-anchor="middle" class="n-title">Personal View</text>
+        <text x="585" y="192" text-anchor="middle" class="n-sub">your rating high, sorted first</text>
+        <text x="585" y="207" text-anchor="middle" class="n-sub">then lowest others' rating</text>
+        <text x="585" y="222" text-anchor="middle" class="n-sub">needs ≥1 other rating to qualify</text>
+
+        <path d="M330,75 C280,105 220,120 190,148" class="f-line"/>
+        <path d="M430,75 C480,105 540,120 570,148" class="f-line"/>
+      </svg>
+    </div>
+    <p class="journey-caption">Same raw ratings, two different lenses — that's the whole idea.</p>
+  </section>
+
+  <section>
+    <h2>Screens and Layout</h2>
+    <div class="screen-grid">
+      <div class="screen-card">
+        <h3>Family View <span style="color:var(--ink-soft); font-weight:400;">(landing)</span></h3>
+        <p>Queue sorted by predicted agreement. Tab to Personal view, "add new" button, "unrated by me" toggle, small "Watched" link in the corner.</p>
+      </div>
+      <div class="screen-card">
+        <h3>Personal View</h3>
+        <p>Same row/detail pattern, filtered and sorted for solo picks.</p>
+      </div>
+      <div class="screen-card">
+        <h3>Add Show</h3>
+        <p>Rotten Tomatoes link or manual entry, side by side. Editable preview before saving.</p>
+      </div>
+      <div class="screen-card">
+        <h3>Show Detail</h3>
+        <p>Tap any row: platform(s), genre, synopsis, scores, link, and your rating control.</p>
+      </div>
+      <div class="screen-card" style="grid-column: 1 / -1;">
+        <h3>Watched Archive</h3>
+        <p>Reached via the small corner link. Read-only, minimal — same basic info, no swipe actions, kept intentionally out of the way.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Look and Feel</h2>
+    <p>Warm and clean / minimalist. Orange as the primary accent, with a complementary palette built around it — avoiding generic default AI-app styling.</p>
+    <div class="palette-row">
+      <div class="swatch" style="background:#d9711f;" title="Primary accent"></div>
+      <div class="swatch" style="background:#3d7a72;" title="Complementary teal"></div>
+      <div class="swatch" style="background:#b5495e;" title="Complementary rose"></div>
+      <div class="swatch" style="background:#fdf9f4; border:1px solid #ecdfd0;" title="Warm background"></div>
+      <div class="swatch" style="background:#2c2420;" title="Ink"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Features and Behavior</h2>
+
+    <details class="reveal" open>
+      <summary>Adding a Show</summary>
+      <div class="reveal-body">
+        <ul>
+          <li>Two paths from the same first screen: paste a Rotten Tomatoes URL, or jump to manual entry.</li>
+          <li>Required: Rotten Tomatoes URL <em>or</em> title — nothing else.</li>
+          <li>Fields: title, cover image, platform(s) (multiple allowed), genre, synopsis, Tomatometer, Popcornmeter, link.</li>
+          <li>A successful link load shows an editable preview before saving — nothing saves silently.</li>
+          <li>A bad/unparseable link shows an error, lets you retry, and offers "add manual entry."</li>
+          <li>No image available (typically manual entries) → placeholder graphic.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="reveal">
+      <summary>Family View Sorting — the family half of the kernel</summary>
+      <div class="reveal-body">
+        <p>Score = lowest rating among whoever's rated it so far. Ties broken by average rating. Unrated shows sink to the bottom.</p>
+        <div class="sort-example">
+          <div class="sort-row"><span>The Bear (mom 5, dad 4, kid 4)</span><span class="score">score 4</span></div>
+          <div class="sort-row"><span>Ted Lasso (mom 5, dad 3, kid 3)</span><span class="score">score 3, avg 3.7</span></div>
+          <div class="sort-row"><span>Cosmos (mom 5, dad 3, kid 2)</span><span class="score">score 2</span></div>
+          <div class="sort-row"><span>New Documentary (no ratings yet)</span><span class="score">↓ bottom</span></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="reveal">
+      <summary>Personal View Sorting — the solo half of the kernel</summary>
+      <div class="reveal-body">
+        <ul>
+          <li>Only shows <strong>you've</strong> rated appear.</li>
+          <li>Shows with zero ratings from anyone else are excluded — "unrated" isn't "unwanted."</li>
+          <li>Primary sort: your own rating, highest first (your 4–5★ shows before your lower-rated ones).</li>
+          <li>Within each tier: sorted by the lowest rating from everyone else, ascending — least-wanted-by-the-family bubbles up first.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="reveal">
+      <summary>Finding What You Haven't Rated</summary>
+      <div class="reveal-body">A toggle/filter on the Family view — "show only unrated by me" — instead of a separate screen, so you keep full context while working through new additions.</div>
+    </details>
+
+    <details class="reveal">
+      <summary>Marking Watched / Deleting</summary>
+      <div class="reveal-body">Swipe a row to reveal <strong>Delete</strong> and <strong>Mark Watched</strong>. Watched moves the show to the minimal read-only Watched Archive; Delete removes it entirely.</div>
+    </details>
+
+    <details class="reveal">
+      <summary>Main Row vs. Detail View</summary>
+      <div class="reveal-body">
+        <ul>
+          <li><strong>Row:</strong> title, cover image (or placeholder), each family member's star rating.</li>
+          <li><strong>Detail:</strong> platform(s), genre, synopsis, Tomatometer/Popcornmeter, link, your rating control.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2>States and Boundaries</h2>
+    <ul class="states-list">
+      <li><strong>Empty state:</strong> "Welcome to your shared video queue! This is an easy way for you and your friends/family to share shows that you are interested in and decide on what to watch next." → "Start by adding your first movie or show."</li>
+      <li><strong>Unrated show:</strong> bottom of Family view; never appears in any Personal view.</li>
+      <li><strong>Partially-rated show:</strong> sorts normally, using only the ratings that exist.</li>
+      <li><strong>Rotten Tomatoes link error:</strong> error message, retry, or jump to manual entry.</li>
+      <li><strong>Watched:</strong> moved to the minimal Watched Archive.</li>
+      <li><strong>Deleted:</strong> gone, no archive.</li>
+      <li><strong>Persistence:</strong> identity remembered per device; queue data persists between sessions and stays private, kept out of the public repo.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Proof-of-Concept Boundary</h2>
+    <div class="tabs">
+      <button class="tab-btn active" data-key="now" onclick="showTab('now')">Building Now</button>
+      <button class="tab-btn" data-key="later" onclick="showTab('later')">Deferred / Later</button>
+      <button class="tab-btn" data-key="cut" onclick="showTab('cut')">Non-Goals</button>
+    </div>
+    <div class="tab-panel active" data-key="now">
+      <ul class="boundary-list">
+        <li>Pick-your-name-once identity, remembered per device</li>
+        <li>Add via Rotten Tomatoes link (editable preview) or manual entry, incl. multi-platform, cover image, genre, synopsis, both RT scores, link field</li>
+        <li>Link-error handling with manual-entry fallback</li>
+        <li>1–5 star rating per person per show</li>
+        <li>Family view: min-rating sort, average tiebreak, unrated at bottom</li>
+        <li>Personal view: your-high / others'-low sort, excludes zero-rated-by-others</li>
+        <li>"Unrated by me" toggle</li>
+        <li>Swipe → Delete / Mark Watched</li>
+        <li>Minimal read-only Watched Archive</li>
+        <li>Empty-state welcome copy</li>
+        <li>Warm, orange-based visual direction</li>
+      </ul>
+    </div>
+    <div class="tab-panel" data-key="later">
+      <ul class="boundary-list">
+        <li>Sharing the queue with friends or other families beyond this household
+          <span class="reason">The empty-state copy says "friends/family" aspirationally, but this build only supports the 3 known household members.</span>
+        </li>
+        <li>A richer, browsable/searchable Watched Archive
+          <span class="reason">Kept to a minimal read-only list for now.</span>
+        </li>
+        <li>Automatic updates if a show's platform availability changes after adding
+          <span class="reason">Not needed to prove the kernel.</span>
+        </li>
+      </ul>
+    </div>
+    <div class="tab-panel" data-key="cut">
+      <ul class="boundary-list">
+        <li>Real user accounts / authentication
+          <span class="reason">Unnecessary for a closed group of three known people — a per-device name pick covers it.</span>
+        </li>
+        <li>Switching identities mid-session on a shared device
+          <span class="reason">Not needed — each family member has their own phone.</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <details class="reveal">
+    <summary>Product Decisions &amp; Why</summary>
+    <div class="reveal-body">
+      <ul>
+        <li><strong>Individual ratings, not one shared score</strong> — powers both the family-agreement view and the personal-picks view from the same data.</li>
+        <li><strong>Remember identity per device</strong> — everyone has their own phone, so no re-entry or mid-session switching needed.</li>
+        <li><strong>Family score = minimum, not average</strong> — "everyone needs to be on board," so one low rating should sink a show.</li>
+        <li><strong>Personal view excludes zero-rated-by-others shows</strong> — "nobody's rated it" isn't evidence the family doesn't want it.</li>
+        <li><strong>Watched archive stays minimal</strong> — a record exists, but it shouldn't clutter the main queue.</li>
+        <li><strong>A toggle, not a third screen, for unrated-by-me</strong> — less to build, same context retained.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="reveal">
+    <summary>Open Questions</summary>
+    <div class="reveal-body">
+      Exactly how the Rotten Tomatoes link gets parsed — what data is actually available to pull programmatically, and how reliably — is a technical feasibility question for <code>4-spec</code>, not a product one. Flagged for spec to investigate before locking in the exact field list.
+    </div>
+  </details>
+
+  <footer>
+    GroupWatchlist · PRD Draft · Markdown version is canonical: <code>devpost/prd.md</code>
+  </footer>
+
+</div>
+
+<script>
+  function showTab(key) {
+    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+      btn.classList.toggle('active', btn.dataset.key === key);
+    });
+    document.querySelectorAll('.tab-panel').forEach(function(panel) {
+      panel.classList.toggle('active', panel.dataset.key === key);
+    });
+  }
+</script>
+
+</body>
+</html>
