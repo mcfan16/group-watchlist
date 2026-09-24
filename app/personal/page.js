@@ -33,8 +33,8 @@ export default function PersonalView() {
 
       {loading ? null : personalShows.length === 0 ? (
         <p style={{ color: "var(--color-text-muted)" }}>
-          Nothing here yet — this fills up once you and someone else have both
-          rated the same show, and you liked it more than they did.
+          Nothing here yet — this fills up once you've rated something 4 or 5
+          stars.
         </p>
       ) : (
         personalShows.map((show) => (

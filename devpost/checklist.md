@@ -49,7 +49,7 @@ Build mode: learn
   Learner check: Switch to your Personal view and check whether a show you rated highly (that nobody else has rated) shows up there — and that one with no other ratings at all doesn't.
   Commit: `Add personal view with solo-pick sorting`
 
-- [ ] **5. Add a show by pasting a Rotten Tomatoes link**
+- [x] **5. Add a show by pasting a Rotten Tomatoes link**
   Becomes usable: Pasting a Rotten Tomatoes URL auto-fills title, cover image, genre, synopsis, both scores, and platform(s) into an editable preview before saving — with a clear error and manual-entry fallback if the link can't be read.
   Why now: The one real technical risk in this build (reading data from an external page). Tackling it once the core kernel already works means a parsing hiccup doesn't block anything else, and the manual-entry fallback already exists from slice 1.
   PRD ref: `prd.md > Adding a Show`, `prd.md > States and Boundaries` (Rotten Tomatoes link error)
@@ -103,3 +103,4 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 ## Revisions
 
 - Personal View sorting changed (`prd.md > Personal View`) — now requires the current person's own rating to be 4 or 5 (not just rated at all) to appear, and sorts by the average of everyone else's ratings ascending (not the lowest individual rating). Trying the built feature against real family data surfaced that "own rating first" put a show everyone already loves above a real solo pick nobody else wanted — the learner redefined the rule live during slice 4.
+- Personal View no longer excludes shows nobody else has rated (reverses the original `scope.md`/`prd.md` decision) — they're treated as a neutral average of 3, landing between the "family doesn't want it" and "family also likes it" groups instead of being hidden. Decided live during slice 5 while trying the app against real data.

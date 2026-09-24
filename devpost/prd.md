@@ -66,8 +66,8 @@ Warm and clean/minimalist. Orange as the primary accent, with a complementary pa
 ### Personal View (the kernel, personal half)
 
 - Shows only appear here if the current person rated it **4 or 5 stars** — a solo pick should be something you're genuinely excited about, not just something you rated.
-- Shows with **zero ratings from anyone else** never appear in Personal view — "nobody's rated it" is not the same as "nobody wants it," so it doesn't count as a safe solo pick.
 - Sort: by the **average rating from everyone else**, ascending — the shows the rest of the family wants least (the safest solo bets, since nobody's missing out) bubble up first. Ties broken by the current person's own rating, highest first.
+- Shows with **zero ratings from anyone else** now appear too (this reversed an earlier decision) — treated as a neutral average of 3 for sorting purposes, so they land between the shows the family actively doesn't want (average below 3) and the shows the family also likes (average above 3), rather than being excluded outright.
 
 ### Finding What You Haven't Rated
 

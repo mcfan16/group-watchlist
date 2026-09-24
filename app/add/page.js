@@ -17,8 +17,14 @@ export default function AddShow() {
   const [tomatometer, setTomatometer] = useState("");
   const [popcornmeter, setPopcornmeter] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
+  const [coverImageUrl, setCoverImageUrl] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+
+  const [rtUrl, setRtUrl] = useState("");
+  const [rtLoading, setRtLoading] = useState(false);
+  const [rtError, setRtError] = useState("");
+  const [rtFound, setRtFound] = useState(false);
 
   function togglePlatform(platform) {
     setPlatforms((current) =>
@@ -26,6 +32,58 @@ export default function AddShow() {
         ? current.filter((p) => p !== platform)
         : [...current, platform]
     );
+  }
+
+  function applyPlatforms(foundPlatforms) {
+    const matched = foundPlatforms.filter((p) => PLATFORMS.includes(p));
+    const leftover = foundPlatforms.filter((p) => !PLATFORMS.includes(p));
+    setPlatforms(matched);
+    if (leftover.length > 0) {
+      setOtherChecked(true);
+      setOtherPlatform(leftover.join(", "));
+    } else {
+      setOtherChecked(false);
+      setOtherPlatform("");
+    }
+  }
+
+  async function handleLookup() {
+    if (!rtUrl.trim()) return;
+
+    setRtLoading(true);
+    setRtError("");
+    setRtFound(false);
+
+    try {
+      const response = await fetch("/api/parse-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: rtUrl.trim() }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setRtError(data.error || "Couldn't read that link — try again or add manually below.");
+        setRtLoading(false);
+        return;
+      }
+
+      if (data.title) setTitle(data.title);
+      if (data.genre) setGenre(data.genre);
+      if (data.synopsis) setSynopsis(data.synopsis);
+      if (data.tomatometer != null) setTomatometer(String(data.tomatometer));
+      if (data.popcornmeter != null) setPopcornmeter(String(data.popcornmeter));
+      if (data.cover_image_url) setCoverImageUrl(data.cover_image_url);
+      if (data.link_url) setLinkUrl(data.link_url);
+      if (data.platforms?.length) applyPlatforms(data.platforms);
+
+      setRtFound(true);
+    } catch (err) {
+      console.error("Link lookup failed:", err);
+      setRtError("Couldn't reach that link — check it and try again, or add manually below.");
+    }
+
+    setRtLoading(false);
   }
 
   async function handleSave(event) {
@@ -51,6 +109,7 @@ export default function AddShow() {
       tomatometer: tomatometer ? Number(tomatometer) : null,
       popcornmeter: popcornmeter ? Number(popcornmeter) : null,
       link_url: linkUrl.trim() || null,
+      cover_image_url: coverImageUrl || null,
     });
 
     setSaving(false);
@@ -69,6 +128,43 @@ export default function AddShow() {
       <div className="topbar">
         <h1>Add a show</h1>
       </div>
+
+      <div className="field" style={{ marginBottom: 20 }}>
+        <label htmlFor="rtUrl">Paste a Rotten Tomatoes link</label>
+        <div style={{ display: "flex", gap: 8 }}>
+          <input
+            id="rtUrl"
+            type="url"
+            className="text-input"
+            style={{ flex: 1 }}
+            value={rtUrl}
+            onChange={(e) => setRtUrl(e.target.value)}
+            placeholder="https://www.rottentomatoes.com/m/..."
+          />
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={handleLookup}
+            disabled={rtLoading || !rtUrl.trim()}
+          >
+            {rtLoading ? "Looking up..." : "Look it up"}
+          </button>
+        </div>
+        {rtError && (
+          <p className="error-message">
+            {rtError} Or just fill in the fields below by hand.
+          </p>
+        )}
+        {rtFound && !rtError && (
+          <p style={{ color: "var(--color-teal)", fontSize: 14, marginTop: 6 }}>
+            Found it! Check the details below before saving.
+          </p>
+        )}
+      </div>
+
+      <p style={{ color: "var(--color-text-muted)", fontSize: 14, marginBottom: 12 }}>
+        Or just fill these in yourself:
+      </p>
 
       <form className="show-form" onSubmit={handleSave}>
         <div className="field">
