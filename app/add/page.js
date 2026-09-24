@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
-const PLATFORMS = ["Netflix", "YouTube", "Hulu", "Amazon Prime"];
+const PLATFORMS = ["Netflix", "YouTube", "Hulu", "Amazon Prime", "Disney+"];
 
 export default function AddShow() {
   const router = useRouter();
@@ -138,7 +138,7 @@ export default function AddShow() {
         </div>
 
         <div className="field">
-          <label htmlFor="tomatometer">Tomatometer score</label>
+          <label htmlFor="tomatometer">Tomatometer score (critics)</label>
           <input
             id="tomatometer"
             type="number"
@@ -150,7 +150,7 @@ export default function AddShow() {
         </div>
 
         <div className="field">
-          <label htmlFor="popcornmeter">Popcornmeter score</label>
+          <label htmlFor="popcornmeter">Popcornmeter score (audience)</label>
           <input
             id="popcornmeter"
             type="number"

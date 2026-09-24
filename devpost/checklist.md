@@ -29,7 +29,7 @@ Build mode: learn
   Learner check: Pick your name, open a show, rate it, and check that your rating shows.
   Commit: `Add identity, show detail, and star rating`
 
-- [ ] **3. The family queue sorts itself, live**
+- [x] **3. The family queue sorts itself, live**
   Becomes usable: The Family view re-sorts to put shows everyone's on board with at the top, updates within seconds as anyone rates (even from another tab or phone), and lets you filter to what you personally haven't rated.
   Why now: This is the first half of the kernel actually paying off — ratings visibly driving agreement. Proving live updates now, with only one view, is simpler than debugging it alongside the personal view too.
   PRD ref: `prd.md > Family View Sorting`, `prd.md > Finding What You Haven't Rated`

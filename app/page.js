@@ -1,31 +1,51 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { useIdentity } from "@/lib/identity";
 import ShowRow from "@/components/ShowRow";
+import { sortFamilyView } from "@/lib/sorting";
+
+const POLL_INTERVAL_MS = 10000;
 
 export default function FamilyView() {
+  const name = useIdentity();
   const [shows, setShows] = useState([]);
+  const [ratings, setRatings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [unratedOnly, setUnratedOnly] = useState(false);
+
+  const loadData = useCallback(async () => {
+    const [showsResult, ratingsResult] = await Promise.all([
+      supabase.from("shows").select("*").eq("status", "queued"),
+      supabase.from("ratings").select("*"),
+    ]);
+
+    if (showsResult.error) console.error("Failed to load shows:", showsResult.error);
+    if (ratingsResult.error) console.error("Failed to load ratings:", ratingsResult.error);
+
+    setShows(showsResult.data || []);
+    setRatings(ratingsResult.data || []);
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
-    async function loadShows() {
-      const { data, error } = await supabase
-        .from("shows")
-        .select("*")
-        .eq("status", "queued");
+    loadData();
+    const interval = setInterval(loadData, POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [loadData]);
 
-      if (error) {
-        console.error("Failed to load shows:", error);
-      } else {
-        setShows(data);
-      }
-      setLoading(false);
-    }
+  function ratingsForShow(showId) {
+    return ratings.filter((r) => r.show_id === showId);
+  }
 
-    loadShows();
-  }, []);
+  const sortedShows = sortFamilyView(shows, ratings);
+  const visibleShows = unratedOnly
+    ? sortedShows.filter(
+        (show) => !ratings.some((r) => r.show_id === show.id && r.person === name)
+      )
+    : sortedShows;
 
   return (
     <div className="page">
@@ -35,6 +55,26 @@ export default function FamilyView() {
           + Add new
         </Link>
       </div>
+
+      {!loading && shows.length > 0 && (
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            marginBottom: 16,
+            fontSize: 14,
+            color: "var(--color-text-muted)",
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={unratedOnly}
+            onChange={() => setUnratedOnly((current) => !current)}
+          />
+          Show only unrated by me
+        </label>
+      )}
 
       {loading ? null : shows.length === 0 ? (
         <div className="empty-state">
@@ -47,8 +87,14 @@ export default function FamilyView() {
             Start by adding your first movie or show
           </Link>
         </div>
+      ) : visibleShows.length === 0 ? (
+        <p style={{ color: "var(--color-text-muted)" }}>
+          Nothing left to rate — nice work!
+        </p>
       ) : (
-        shows.map((show) => <ShowRow key={show.id} show={show} />)
+        visibleShows.map((show) => (
+          <ShowRow key={show.id} show={show} ratings={ratingsForShow(show.id)} />
+        ))
       )}
     </div>
   );
