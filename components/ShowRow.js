@@ -1,8 +1,6 @@
-import Link from "next/link";
-
 export default function ShowRow({ show, ratings = [] }) {
   return (
-    <Link href={`/show/${show.id}`} className="card">
+    <div className="card">
       {show.cover_image_url ? (
         <img className="cover" src={show.cover_image_url} alt={show.title} />
       ) : (
@@ -29,6 +27,6 @@ export default function ShowRow({ show, ratings = [] }) {
           </div>
         )}
       </div>
-    </Link>
+    </div>
   );
 }

@@ -59,7 +59,7 @@ Build mode: learn
   Learner check: Paste a real Rotten Tomatoes link for a show you actually want to add, check the preview looks right, and save it.
   Commit: `Add Rotten Tomatoes link parsing with editable preview`
 
-- [ ] **6. Mark a show watched or delete it**
+- [x] **6. Mark a show watched or delete it**
   Becomes usable: Swiping a row reveals Delete and Mark Watched; watched shows move to a simple read-only archive off the main queue.
   Why now: The last piece of the core loop from `scope.md > The Core Loop` — closes the loop from "add" to "watched" — and is low-risk now that the harder data and sorting work is done.
   PRD ref: `prd.md > Marking Watched / Deleting`, `prd.md > Watched Archive`

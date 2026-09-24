@@ -1,16 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
 import { useIdentity } from "@/lib/identity";
 import { useShowsAndRatings } from "@/lib/useShowsAndRatings";
 import ShowRow from "@/components/ShowRow";
+import SwipeActions from "@/components/SwipeActions";
 import { sortFamilyView } from "@/lib/sorting";
 
 export default function FamilyView() {
+  const router = useRouter();
   const name = useIdentity();
-  const { shows, ratings, loading } = useShowsAndRatings();
+  const { shows, ratings, loading, refresh } = useShowsAndRatings();
   const [unratedOnly, setUnratedOnly] = useState(false);
+  const [watchedCount, setWatchedCount] = useState(0);
+
+  useEffect(() => {
+    async function loadWatchedCount() {
+      const { count } = await supabase
+        .from("shows")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "watched");
+      setWatchedCount(count || 0);
+    }
+    loadWatchedCount();
+  }, [shows]);
+
+  async function handleDelete(showId) {
+    const { error } = await supabase.from("shows").delete().eq("id", showId);
+    if (error) console.error("Failed to delete show:", error);
+    refresh();
+  }
+
+  async function handleMarkWatched(showId) {
+    const { error } = await supabase
+      .from("shows")
+      .update({ status: "watched" })
+      .eq("id", showId);
+    if (error) console.error("Failed to mark show watched:", error);
+    refresh();
+  }
 
   function ratingsForShow(showId) {
     return ratings.filter((r) => r.show_id === showId);
@@ -32,9 +63,12 @@ export default function FamilyView() {
         </Link>
       </div>
 
-      <p style={{ marginBottom: 16 }}>
+      <p style={{ marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
         <Link href="/personal" style={{ color: "var(--color-teal)", fontWeight: 600 }}>
           Switch to my Personal view →
+        </Link>
+        <Link href="/watched" style={{ color: "var(--color-text-muted)", fontSize: 14 }}>
+          Watched ({watchedCount})
         </Link>
       </p>
 
@@ -75,7 +109,14 @@ export default function FamilyView() {
         </p>
       ) : (
         visibleShows.map((show) => (
-          <ShowRow key={show.id} show={show} ratings={ratingsForShow(show.id)} />
+          <SwipeActions
+            key={show.id}
+            onDelete={() => handleDelete(show.id)}
+            onMarkWatched={() => handleMarkWatched(show.id)}
+            onTap={() => router.push(`/show/${show.id}`)}
+          >
+            <ShowRow show={show} ratings={ratingsForShow(show.id)} />
+          </SwipeActions>
         ))
       )}
     </div>
