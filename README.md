@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GroupWatchlist
 
-## Getting Started
+A shared movie/TV queue for a family — everyone rates shows individually, so
+the app can surface what the group will actually agree to watch tonight, or
+what you'd enjoy watching solo. Built with Next.js and Supabase.
 
-First, run the development server:
+Live at: https://group-watchlist.vercel.app/
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Running it locally
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. Install dependencies:
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+   ```bash
+   npm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. Copy `.env.example` to `.env.local` and fill in your own Supabase project's
+   URL and anon key (Project Settings → Data API / API Keys in Supabase):
 
-## Learn More
+   ```bash
+   cp .env.example .env.local
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+3. In your Supabase project's SQL Editor, create the two tables this app
+   needs — see `devpost/spec.md > Data Model` for the full schema (`shows`
+   and `ratings`).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+4. Start the dev server:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   ```bash
+   npm run dev
+   ```
 
-## Deploy on Vercel
+   Open [http://localhost:3000](http://localhost:3000).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deploying
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This repo deploys to [Vercel](https://vercel.com) directly from GitHub —
+push to `main` and Vercel redeploys automatically. The same two environment
+variables from `.env.local` need to be set in the Vercel project's
+Settings → Environment Variables (Production and Preview).
+
+## Project docs
+
+See `devpost/` for the full scope, product requirements, technical spec, and
+build checklist this project was planned and built from.

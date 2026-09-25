@@ -69,7 +69,7 @@ Build mode: learn
   Learner check: Swipe a show you're done with, mark it watched, and check it shows up in the Watched Archive instead of the main list.
   Commit: `Add swipe actions and watched archive`
 
-- [ ] **7. The family can use it on their own phones**
+- [x] **7. The family can use it on their own phones**
   Becomes usable: The real, deployed app at a public-but-unlisted URL, reachable from each family member's own phone.
   Why now: This is the learner's actual stated goal beyond the hackathon (`scope.md > Why This Matters to the Learner`) — deploying while the build is fresh means the demo video can show the real deployed version, and `6-ship` doesn't need to start from zero on it.
   PRD ref: — (deployment isn't a product behavior; carried from the spec)
