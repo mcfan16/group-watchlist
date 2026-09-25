@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 import ShowRow from "@/components/ShowRow";
 
 export default function WatchedArchive() {
@@ -11,14 +10,10 @@ export default function WatchedArchive() {
 
   useEffect(() => {
     async function load() {
-      const { data, error } = await supabase
-        .from("shows")
-        .select("*")
-        .eq("status", "watched")
-        .order("created_at", { ascending: false });
-
-      if (error) console.error("Failed to load watched shows:", error);
-      setShows(data || []);
+      const response = await fetch("/api/shows?status=watched");
+      const data = await response.json();
+      if (!response.ok) console.error("Failed to load watched shows:", data.error);
+      setShows(data.shows || []);
       setLoading(false);
     }
 

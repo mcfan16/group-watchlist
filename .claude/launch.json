@@ -3,8 +3,11 @@
   "configurations": [
     {
       "name": "dev",
-      "runtimeExecutable": "/Users/mfan/.nvm/versions/node/v24.21.0/bin/npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": [
+        "-c",
+        "export PATH=\"/Users/mfan/.nvm/versions/node/v24.21.0/bin:$PATH\"; exec npm run dev"
+      ],
       "port": 3000
     }
   ]

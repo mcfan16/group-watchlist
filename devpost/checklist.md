@@ -79,6 +79,16 @@ Build mode: learn
   Learner check: Open the deployed link on your own phone (and have your husband and kid open it on theirs), optionally add it to your home screen, and confirm you can each pick your name and see the same queue.
   Commit: `Add project README with setup and deploy notes`
 
+- [x] **8. Lock down data access behind server-side routes**
+  Becomes usable: The browser no longer talks to Supabase directly — every read and write goes through your own Next.js server, which is the only thing holding the powerful Supabase key. Row Level Security is turned on with no public policies, so even someone who finds your Supabase project URL can't read or change your family's shows or ratings.
+  Why now: A `6-ship` security check found that the Supabase anon key embedded in the deployed site lets anyone with your project URL read and write your `shows` and `ratings` tables directly, bypassing the app entirely. You chose the real fix over a cosmetic one.
+  PRD ref: — (not a product behavior; a security/architecture change carried from a `6-ship` finding)
+  Spec ref: `spec.md > How This Works, In Plain Language`, `spec.md > File Structure`, `spec.md > Data Model`, `spec.md > External Services and Dependencies` (revised as part of this slice)
+  Build: Add `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` as server-only env vars (no `NEXT_PUBLIC_` prefix); update `lib/supabase.js` to use them; add `app/api/shows/route.js` (GET list by status, POST create), `app/api/shows/[id]/route.js` (GET one show + my rating, PATCH status, DELETE), and `app/api/ratings/route.js` (POST upsert rating); update `lib/useShowsAndRatings.js`, `app/page.js`, `app/personal/page.js`, `app/watched/page.js`, `app/add/page.js`, and `app/show/[id]/page.js` to call these routes with `fetch` instead of importing `@/lib/supabase` directly; in Supabase's SQL editor, enable Row Level Security on `shows` and `ratings` with no policies (the service role key used server-side bypasses RLS automatically).
+  Verify (mechanical): `npm run dev` starts with no errors; exercise every route locally (add a show, rate it, mark it watched, delete one) and confirm each still works through the browser; re-run the same direct-to-Supabase read request used during the `6-ship` check with the old anon key and confirm it's now rejected (401/403) instead of returning data.
+  Learner check: Use the app locally exactly like normal — add a show, rate it, mark one watched, delete one — and confirm nothing feels different to use.
+  Commit: `Move Supabase access behind server routes and lock down RLS`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 1 (first working screen; a chance to confirm the warm/orange visual direction before more screens get built)
@@ -104,3 +114,4 @@ Activity mode: live conversational walkthrough with real file/line references (n
 
 - Personal View sorting changed (`prd.md > Personal View`) — now requires the current person's own rating to be 4 or 5 (not just rated at all) to appear, and sorts by the average of everyone else's ratings ascending (not the lowest individual rating). Trying the built feature against real family data surfaced that "own rating first" put a show everyone already loves above a real solo pick nobody else wanted — the learner redefined the rule live during slice 4.
 - Personal View no longer excludes shows nobody else has rated (reverses the original `scope.md`/`prd.md` decision) — they're treated as a neutral average of 3, landing between the "family doesn't want it" and "family also likes it" groups instead of being hidden. Decided live during slice 5 while trying the app against real data.
+- Added slice 8 (data-access lockdown) after the checklist was already complete — a `6-ship` security check found the deployed site's public Supabase key let anyone with the project URL read and write the family's shows and ratings directly, bypassing the app. Moved all database access behind Next.js API routes using a server-only secret key, and enabled Row Level Security with no policies on both tables. `spec.md > How This Works`, `> File Structure`, and `> External Services and Dependencies` updated to match. `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` replaced by server-only `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` in `.env.local` and `.env.example`.

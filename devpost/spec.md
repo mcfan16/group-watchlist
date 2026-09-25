@@ -7,7 +7,7 @@ status: approved
 
 ## How This Works, In Plain Language
 
-Three pieces work together. **The website** is what you actually see and tap on your phone — the queue, star ratings, add-show screen. **A small helper function** runs behind the scenes only when needed — right now, just for fetching a pasted Rotten Tomatoes page and reading out its details, since a phone's browser can't safely reach out to another website directly. **A shared database** is a spreadsheet living in the cloud that all three of your phones read from and write to, so when your husband rates something, you see it too.
+Three pieces work together. **The website** is what you actually see and tap on your phone — the queue, star ratings, add-show screen. **A set of small helper functions** run behind the scenes whenever the website needs to read or change data — fetching a pasted Rotten Tomatoes page, loading the queue, saving a rating, marking something watched. The website never talks to the database directly; it always goes through one of these helpers, which is also what keeps the database's powerful access key safely on the server and out of your phone's browser. **A shared database** is a spreadsheet living in the cloud that all three of your phones read from and write to (through those helpers), so when your husband rates something, you see it too. The database itself is locked down with Row Level Security so nobody except those server-side helpers can read or write it, even if someone found its web address.
 
 We're building the website and the helper function together using **Next.js**, and using **Supabase** as the shared spreadsheet. **Vercel** takes the finished code from your GitHub repo and puts it on the internet so all three phones can reach it from anywhere — no server to set up or maintain yourselves.
 
@@ -40,7 +40,7 @@ Traces `prd.md > The Core Journey`:
 
 - **Local development:** `npm run dev`, then open `http://localhost:3000` in a browser — this is what to record for the required demo video.
 - **Real family use (the learner's actual goal beyond the hackathon):** deployed on Vercel, connected to the GitHub repo, so each family member opens the same public-but-unlisted URL from their own phone. Each person can use their phone's "Add to Home Screen" option to get an icon that opens it full-screen, like a real app — no app store needed.
-- **Environment requirements:** Node.js (any recent LTS version), a free Supabase project (provides a URL + API key), a free Vercel account connected to GitHub. Supabase keys go in `.env.local`, which is gitignored — never committed.
+- **Environment requirements:** Node.js (any recent LTS version), a free Supabase project (provides a URL + secret key), a free Vercel account connected to GitHub. The Supabase URL and secret key go in `.env.local` as `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (server-only, never sent to the browser), which is gitignored — never committed.
 - Submission requires a short demo video and a public GitHub repository; the Vercel deployment is a bonus for real use, not a substitute for either.
 - **Recommended demo approach:** record using the deployed Vercel version, ideally showing it on multiple actual phones — that demonstrates the real kernel (separate people, separate devices, agreement forming live) far more convincingly than one browser window standing in for three people. Test the deployed version thoroughly a day or two beforehand; keep the localhost version as a fallback in case of last-minute hosting issues. `6-ship` will help plan and shoot the actual recording.
 
@@ -111,6 +111,9 @@ groupwatchlist/
 │   ├── show/[id]/page.js    # Show Detail view
 │   ├── watched/page.js      # Watched Archive (read-only)
 │   ├── api/parse-link/route.js  # Fetches & reads a pasted RT page
+│   ├── api/shows/route.js       # List shows + ratings (GET), add a show (POST)
+│   ├── api/shows/[id]/route.js  # One show + your rating (GET), mark watched/queued (PATCH), delete (DELETE)
+│   ├── api/ratings/route.js     # Save/update a person's rating (POST)
 │   ├── layout.js            # Shared page frame; checks for a saved name
 │   └── globals.css          # Warm/orange styling
 ├── components/
@@ -119,18 +122,18 @@ groupwatchlist/
 │   ├── StarRating.js        # Tap-to-rate control
 │   └── SwipeActions.js      # Swipe-to-reveal Delete / Mark Watched
 ├── lib/
-│   ├── supabase.js          # Connects to the shared database
+│   ├── supabase.js          # Server-only: connects to the database with the secret key. Imported only by files under app/api/**
 │   ├── sorting.js           # Family & personal sort rules
 │   └── identity.js          # Reads/writes the saved name (localStorage)
 ├── devpost/                 # Planning docs (scope, PRD, this spec)
-├── .env.local               # Supabase URL/key — gitignored, never committed
+├── .env.local               # Supabase URL/secret key — gitignored, never committed
 ├── .gitignore
 └── package.json
 ```
 
 ## External Services and Dependencies
 
-- **Supabase** — hosted Postgres database + JS client library (`@supabase/supabase-js`). Free tier. Requires creating a project (gets you a URL + API key) and creating the two tables above. Docs: https://supabase.com/docs
+- **Supabase** — hosted Postgres database + JS client library (`@supabase/supabase-js`). Free tier. Requires creating a project (gets you a URL + keys) and creating the two tables above. Row Level Security is enabled on both tables with no policies, so only server code holding the secret key (which always bypasses RLS) can read or write them — the browser never gets direct database access. Docs: https://supabase.com/docs
 - **Vercel** — hosting, connected to the GitHub repo, auto-deploys on push. Free tier for a project this size. Docs: https://vercel.com/docs
 - **Rotten Tomatoes** — not a formal API; the link parser fetches the public page directly. No key, no rate limit documented (since it isn't an official integration), so fetch politely (one request per add, not repeated automatically) and expect occasional pages that don't parse cleanly.
 

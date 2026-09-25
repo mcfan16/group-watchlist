@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 import { useIdentity } from "@/lib/identity";
 import { useShowsAndRatings } from "@/lib/useShowsAndRatings";
 import ShowRow from "@/components/ShowRow";
@@ -15,17 +14,18 @@ export default function PersonalView() {
   const { shows, ratings, loading, refresh } = useShowsAndRatings();
 
   async function handleDelete(showId) {
-    const { error } = await supabase.from("shows").delete().eq("id", showId);
-    if (error) console.error("Failed to delete show:", error);
+    const response = await fetch(`/api/shows/${showId}`, { method: "DELETE" });
+    if (!response.ok) console.error("Failed to delete show:", await response.json());
     refresh();
   }
 
   async function handleMarkWatched(showId) {
-    const { error } = await supabase
-      .from("shows")
-      .update({ status: "watched" })
-      .eq("id", showId);
-    if (error) console.error("Failed to mark show watched:", error);
+    const response = await fetch(`/api/shows/${showId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "watched" }),
+    });
+    if (!response.ok) console.error("Failed to mark show watched:", await response.json());
     refresh();
   }
 

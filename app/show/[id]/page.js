@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 import { useIdentity } from "@/lib/identity";
 import StarRating from "@/components/StarRating";
 
@@ -20,27 +19,18 @@ export default function ShowDetail() {
     if (!name) return;
 
     async function load() {
-      const { data: showData, error: showError } = await supabase
-        .from("shows")
-        .select("*")
-        .eq("id", id)
-        .single();
+      const response = await fetch(
+        `/api/shows/${id}?person=${encodeURIComponent(name)}`
+      );
+      const data = await response.json();
 
-      if (showError) {
-        console.error("Failed to load show:", showError);
+      if (!response.ok) {
+        console.error("Failed to load show:", data.error);
         setLoading(false);
         return;
       }
-      setShow(showData);
-
-      const { data: ratingData } = await supabase
-        .from("ratings")
-        .select("stars")
-        .eq("show_id", id)
-        .eq("person", name)
-        .maybeSingle();
-
-      if (ratingData) setMyRating(ratingData.stars);
+      setShow(data.show);
+      if (data.myRating) setMyRating(data.myRating);
       setLoading(false);
     }
 
@@ -49,16 +39,15 @@ export default function ShowDetail() {
 
   async function handleSubmit() {
     setSubmitting(true);
-    const { error } = await supabase
-      .from("ratings")
-      .upsert(
-        { show_id: id, person: name, stars: myRating, updated_at: new Date().toISOString() },
-        { onConflict: "show_id,person" }
-      );
+    const response = await fetch("/api/ratings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ show_id: id, person: name, stars: myRating }),
+    });
     setSubmitting(false);
 
-    if (error) {
-      console.error("Failed to save rating:", error);
+    if (!response.ok) {
+      console.error("Failed to save rating:", await response.json());
       return;
     }
     router.push("/");

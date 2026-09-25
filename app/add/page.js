@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 
 const PLATFORMS = ["Netflix", "YouTube", "Hulu", "Amazon Prime", "Disney+"];
 
@@ -101,22 +100,27 @@ export default function AddShow() {
         ? [...platforms, otherPlatform.trim()]
         : platforms;
 
-    const { error: saveError } = await supabase.from("shows").insert({
-      title: title.trim(),
-      platforms: allPlatforms,
-      genre: genre.trim() || null,
-      synopsis: synopsis.trim() || null,
-      tomatometer: tomatometer ? Number(tomatometer) : null,
-      popcornmeter: popcornmeter ? Number(popcornmeter) : null,
-      link_url: linkUrl.trim() || null,
-      cover_image_url: coverImageUrl || null,
+    const response = await fetch("/api/shows", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: title.trim(),
+        platforms: allPlatforms,
+        genre: genre.trim() || null,
+        synopsis: synopsis.trim() || null,
+        tomatometer: tomatometer ? Number(tomatometer) : null,
+        popcornmeter: popcornmeter ? Number(popcornmeter) : null,
+        link_url: linkUrl.trim() || null,
+        cover_image_url: coverImageUrl || null,
+      }),
     });
 
     setSaving(false);
 
-    if (saveError) {
+    if (!response.ok) {
+      const data = await response.json();
       setError("Couldn't save that show — try again in a moment.");
-      console.error(saveError);
+      console.error(data.error);
       return;
     }
 
