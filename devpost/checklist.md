@@ -82,23 +82,23 @@ Build mode: learn
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 1 (first working screen; a chance to confirm the warm/orange visual direction before more screens get built)
-- [ ] Final kick-the-tires exploration and feedback completed
+- [x] Final kick-the-tires exploration and feedback completed — learner and family used the live deployed app for real; no problems found
 
 ## Final Review
 
-- [ ] Final review complete — feedback resolved and learner confirms ready to ship
+- [x] Final review complete — feedback resolved and learner confirms ready to ship (no changes needed; family is already using it)
 
 ## Code Tour and App Map
 
-- [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
-- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
-- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+- [x] Learning activity complete — guided route for a newcomer
+- [x] Optional edit and transfer reflection addressed — edit declined ("it's perfect the way it is"); transfer question skipped since she'd already expressed the takeaway
+- [x] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 
-Activity and evidence: [what actually happened; real document/test/code references; unfinished work if interrupted]
-Route and stops: [actual paths and symbols; guided stops completed, or reference-only route]
-Edit outcome: [tried/kept/reverted/declined/not applicable; verification if changed]
-Reflection: [offered/answered/declined/already covered — personal answer belongs only in the ignored profile]
-Activity mode: [live app and editor, explicit static fallback, focused alternative, prior practice, or recap]
+Activity and evidence: Traced rating a show end to end — components/StarRating.js (tap) → app/show/[id]/page.js `handleSubmit` (writes to the ratings table) → lib/sorting.js `sortFamilyView` (recomputes the Family Queue order). Connects to the learner's goal of understanding how an agent turns an idea into working code.
+Route and stops: components/StarRating.js; app/show/[id]/page.js `handleSubmit` (line 50); lib/sorting.js `sortFamilyView` (line 14) — all three walked through live in chat.
+Edit outcome: declined — learner said the app is "perfect the way it is."
+Reflection: not asked — learner had already expressed satisfaction/the takeaway unprompted.
+Activity mode: live conversational walkthrough with real file/line references (no shared editor session)
 
 ## Revisions
 
